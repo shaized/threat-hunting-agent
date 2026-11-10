@@ -1,53 +1,38 @@
-# Threat Intelligence Agent
+# Threat Hunting Agent
 
 ## Summary
 
-- **advisory:** DEMO-2026-001
-- **scope:** Fictional training lab snapshot
-- **assets examined:** 3
-- **product candidates:** 3
-- **affected version matches:** 1
-- **assessment:** potential\_exposure
+- **unique events:** 4
+- **duplicates ignored:** 0
+- **threshold:** 3
+- **window seconds:** 300
+- **findings:** 1
+- **assessment:** investigate
 
 ## Findings
 
 ### Finding 1
 
-- **asset:** lab-gateway
-- **version:** 2\.4\.1
-- **status:** affected\_version\_match
-- **exposure:** internet
-- **review priority:** expedite
-- **evidence:** \["inventory:lab-gateway", "https://example\.org/advisories/DEMO-2026-001"\]
-
-### Finding 2
-
-- **asset:** lab-worker
-- **version:** null
-- **status:** version\_unknown
-- **exposure:** internal
-- **review priority:** verify
-- **evidence:** \["inventory:lab-worker", "https://example\.org/advisories/DEMO-2026-001"\]
-
-### Finding 3
-
-- **asset:** lab-updated
-- **version:** 2\.5\.0
-- **status:** version\_not\_listed
-- **exposure:** internal
-- **review priority:** verify
-- **evidence:** \["inventory:lab-updated", "https://example\.org/advisories/DEMO-2026-001"\]
+- **status:** requires\_investigation
+- **service:** lab-identity
+- **user:** analyst-demo
+- **src ip:** 192\.0\.2\.10
+- **first failure:** 2026-01-15T10:01:00Z
+- **success at:** 2026-01-15T10:04:00Z
+- **failure count:** 3
+- **evidence ids:** \["auth-1", "auth-2", "auth-3", "auth-4"\]
+- **hypothesis:** A failure burst followed by success may indicate credential guessing\.
 
 
 ## Limitations
 
-- Exact vendor/product and exact version matching only; no aliases, ranges, backport or reachability analysis\.
-- A listed vulnerable version does not prove exploitability or compromise; a non-listed version is not confirmed safe\.
-- The input snapshot is not independently verified\. Inventory completeness and source freshness are unknown\.
-- Review priority is a transparent example heuristic, not CVSS, SSVC or a remediation SLA\.
+- This one hunt covers authentication bursts for the same service, user and IP; it does not cover all brute-force behavior\.
+- A matching sequence can also reflect mistyped passwords or automation; it does not prove compromise\.
+- No independent check of collection completeness, retention, clock accuracy or service identity was performed\.
+- Events at identical timestamps cannot establish sequence order\. No pattern is not a clean bill of health\.
 
 ## Next Steps
 
-- Verify advisory scope, version ranges and exploitation evidence against primary sources\.
-- Check runtime version, configuration, reachability and mitigations for each candidate\.
-- Record missing inventory coverage and assign an owner to unresolved exposure\.
+- Confirm collection coverage and the service/user identity mapping\.
+- Review MFA, device context, authorized activity and actions after the successful login\.
+- Document evidence supporting and contradicting the hypothesis before escalation\.

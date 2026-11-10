@@ -1,18 +1,18 @@
 ---
-name: threat-intel-agent
-description: Model-agnostic threat intelligence skill with a local advisory-to-inventory matching tool and synthetic examples.
+name: threat-hunting-agent
+description: Hypothesis-driven hunting skill with an offline authentication-sequence detector, evidence references and regression tests.
 ---
 
-# Threat Intelligence Agent
+# Threat Hunting Agent
 
-Turn an advisory into an evidence-backed exposure review.
+Investigate a hypothesis with ordered, traceable evidence.
 
 ## Workflow
 
-1. Identify the advisory, affected product, source dates and the assessment scope. Prefer primary vendor advisories and authoritative exploitation evidence.
-2. Compare the advisory with the supplied asset inventory using agent.py. The helper accepts exact versions only; manually resolve version ranges, packaging and backports with evidence.
-3. Assess runtime presence, configuration, exposure, required attacker access and controls separately. Record what is measured and what is inferred.
-4. Return an exposure assessment with evidence references, missing coverage, confidence reasoning and specific next steps. A version match establishes a candidate, not compromise.
+1. State a falsifiable hunt hypothesis, the entity keys, the observation window and the telemetry required to test it.
+2. Check data availability, retention, time zones and field meaning. Missing telemetry is a coverage gap, not a negative result.
+3. Run agent.py for the included authentication hunt. It correlates strictly earlier failures and a later success for the same service, user and source IP. Normalize service and tenant identity before supplying events.
+4. Investigate alternative explanations, post-login activity and contradictory observations. Return the hypothesis, observations, evidence IDs, confidence, coverage and recommended pivots.
 
 ## Local evidence tool
 

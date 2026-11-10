@@ -1,39 +1,38 @@
 {
-  "advisory": {
-    "id": "DEMO-2026-001",
-    "vendor": "Example Vendor",
-    "product": "Example Gateway",
-    "affected_versions": [
-      "2.4.0",
-      "2.4.1"
-    ],
-    "source": "https://example.org/advisories/DEMO-2026-001",
-    "exploitation": "unknown"
-  },
-  "inventory": {
-    "scope": "Fictional training lab snapshot",
-    "assets": [
-      {
-        "id": "lab-gateway",
-        "vendor": "Example Vendor",
-        "product": "Example Gateway",
-        "version": "2.4.1",
-        "exposure": "internet"
-      },
-      {
-        "id": "lab-worker",
-        "vendor": "Example Vendor",
-        "product": "Example Gateway",
-        "version": null,
-        "exposure": "internal"
-      },
-      {
-        "id": "lab-updated",
-        "vendor": "Example Vendor",
-        "product": "Example Gateway",
-        "version": "2.5.0",
-        "exposure": "internal"
-      }
-    ]
-  }
+  "threshold": 3,
+  "window_seconds": 300,
+  "events": [
+    {
+      "id": "auth-1",
+      "timestamp": "2026-01-15T10:01:00Z",
+      "service": "lab-identity",
+      "user": "analyst-demo",
+      "src_ip": "192.0.2.10",
+      "outcome": "failure"
+    },
+    {
+      "id": "auth-2",
+      "timestamp": "2026-01-15T10:02:00Z",
+      "service": "lab-identity",
+      "user": "analyst-demo",
+      "src_ip": "192.0.2.10",
+      "outcome": "failure"
+    },
+    {
+      "id": "auth-3",
+      "timestamp": "2026-01-15T10:03:00Z",
+      "service": "lab-identity",
+      "user": "analyst-demo",
+      "src_ip": "192.0.2.10",
+      "outcome": "failure"
+    },
+    {
+      "id": "auth-4",
+      "timestamp": "2026-01-15T10:04:00Z",
+      "service": "lab-identity",
+      "user": "analyst-demo",
+      "src_ip": "192.0.2.10",
+      "outcome": "success"
+    }
+  ]
 }

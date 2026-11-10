@@ -2,7 +2,7 @@
 
 ## Input
 
-The root has advisory and inventory objects. advisory requires id, vendor, product, affected_versions (a nonempty list of exact version strings), source and exploitation (observed, not_reported or unknown). inventory requires scope and assets. Each asset requires a unique id, vendor, product, version (string or null), and exposure (internet, internal or unknown). Vendor/product matching ignores case and surrounding whitespace; version matching is exact. An unlisted version is unresolved, not safe.
+The root has events and optional integer threshold (default 3) and window_seconds (default 300). Every event requires id, timestamp with a UTC offset, service, user, src_ip (IPv4 or IPv6) and outcome (failure or success). The time window includes the lower boundary and excludes events at the same timestamp as the success. Identical repeated IDs are deduplicated; conflicting duplicates fail. Each failure can contribute to at most one success episode per service/user/IP.
 
 See [example.json](example.json) for a complete fictional input. All demo identities, indicators, events, products and reputation providers are synthetic. Documentation IPs and example domains are not threat intelligence.
 
@@ -16,6 +16,6 @@ JSON preserves evidence text. Markdown renders evidence as literal escaped text,
 
 ## Example interpretation
 
-One affected-version candidate, one unknown version and one version not listed in the advisory. Overall exposure remains subject to verification.
+One review candidate links three failures to the later success. The example is a hypothesis trigger, not a confirmed incident.
 
-Vendor advisories and package maintainers should be the primary source for affected ranges; the demo advisory is fictional.
+Background: [MITRE ATT&CK T1110 — Brute Force](https://attack.mitre.org/techniques/T1110/). The included hunt covers only one possible authentication pattern; it is not comprehensive T1110 coverage.

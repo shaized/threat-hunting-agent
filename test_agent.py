@@ -10,37 +10,67 @@ class AgentTests(unittest.TestCase):
     def setUp(self):
         self.data = json.loads(Path(__file__).with_name("example.json").read_text())
 
-    def test_example_retains_three_distinct_applicability_states(self):
-        result = analyze(self.data)
-        self.assertEqual(result["summary"]["affected_version_matches"], 1)
+    def test_sequence_references_all_four_events(self):
         self.assertEqual(
-            [row["status"] for row in result["findings"]],
-            ["affected_version_match", "version_unknown", "version_not_listed"],
+            analyze(self.data)["findings"][0]["evidence_ids"],
+            ["auth-1", "auth-2", "auth-3", "auth-4"],
         )
 
-    def test_vendor_and_product_case_does_not_hide_a_candidate(self):
-        self.data["inventory"]["assets"][0]["vendor"] = " example vendor "
-        self.assertEqual(analyze(self.data)["summary"]["affected_version_matches"], 1)
+    def test_input_order_does_not_change_sequence(self):
+        expected = analyze(self.data)
+        self.data["events"].reverse()
+        self.assertEqual(analyze(self.data), expected)
 
-    def test_empty_inventory_does_not_assert_safety(self):
-        self.data["inventory"]["assets"] = []
-        self.assertEqual(analyze(self.data)["summary"]["assessment"], "inconclusive")
+    def test_repeated_delivery_cannot_inflate_failures(self):
+        event = self.data["events"][0]
+        self.data["events"] = [
+            event,
+            copy.deepcopy(event),
+            copy.deepcopy(event),
+            self.data["events"][-1],
+        ]
+        result = analyze(self.data)
+        self.assertEqual(result["findings"], [])
+        self.assertEqual(result["summary"]["duplicates_ignored"], 2)
 
-    def test_missing_version_is_not_interpreted_as_patched(self):
-        self.data["inventory"]["assets"][0]["version"] = None
-        self.assertEqual(analyze(self.data)["findings"][0]["status"], "version_unknown")
-
-    def test_empty_affected_versions_is_rejected(self):
-        self.data["advisory"]["affected_versions"] = []
+    def test_conflicting_ids_fail_closed(self):
+        event = copy.deepcopy(self.data["events"][0])
+        event["outcome"] = "success"
+        self.data["events"].append(event)
         with self.assertRaises(ValueError):
             analyze(self.data)
 
-    def test_duplicate_asset_ids_are_rejected(self):
-        self.data["inventory"]["assets"].append(
-            copy.deepcopy(self.data["inventory"]["assets"][0])
-        )
-        with self.assertRaises(ValueError):
-            analyze(self.data)
+    def test_another_service_does_not_join(self):
+        self.data["events"][-1]["service"] = "other-service"
+        self.assertEqual(analyze(self.data)["findings"], [])
+
+    def test_another_user_does_not_join(self):
+        self.data["events"][-1]["user"] = "another-user"
+        self.assertEqual(analyze(self.data)["findings"], [])
+
+    def test_equal_timestamps_do_not_establish_sequence(self):
+        for event in self.data["events"]:
+            event["timestamp"] = "2026-01-15T10:04:00Z"
+        self.assertEqual(analyze(self.data)["findings"], [])
+
+    def test_window_boundary_is_inclusive(self):
+        self.data["window_seconds"] = 180
+        self.assertEqual(len(analyze(self.data)["findings"]), 1)
+        self.data["window_seconds"] = 179
+        self.assertEqual(analyze(self.data)["findings"], [])
+
+    def test_success_consumes_only_earlier_failures(self):
+        success = copy.deepcopy(self.data["events"][-1])
+        success.update(id="auth-5", timestamp="2026-01-15T10:05:00Z")
+        self.data["events"].append(success)
+        self.assertEqual(len(analyze(self.data)["findings"]), 1)
+
+    def test_fractional_timestamps_and_offsets_order_correctly(self):
+        self.data["threshold"] = 1
+        self.data["events"] = [self.data["events"][0], self.data["events"][-1]]
+        self.data["events"][0]["timestamp"] = "2026-01-15T12:00:00+02:00"
+        self.data["events"][1]["timestamp"] = "2026-01-15T10:00:00.100Z"
+        self.assertEqual(len(analyze(self.data)["findings"]), 1)
 
 
 if __name__ == "__main__":
